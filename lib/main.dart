@@ -7,12 +7,12 @@ import 'package:task/view/login_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Initialize Firebase and other services here
   NotificationService notificationService = NotificationService();
-  await notificationService.setupFirebaseMessaging();
+  notificationService.setupFirebaseMessaging();
   runApp(const MyApp());
 }
 
@@ -33,5 +33,5 @@ class MyApp extends StatelessWidget {
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  debugPrint("Handling a background message: ${message.messageId}");
 }
