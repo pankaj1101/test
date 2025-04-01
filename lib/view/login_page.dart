@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:task/service/auth_service.dart';
+import 'package:task/service/notification_service.dart';
 import 'package:task/view/dashboard.dart';
 import 'package:task/widgets/app_button_with_icon.dart';
 import 'package:task/widgets/apptextformfield.dart';
@@ -148,8 +149,8 @@ class _LoginPageState extends State<LoginPage> {
         _emailController.text,
         _passwordController.text,
       );
-      // NotificationService notificationService = NotificationService();
-      // await notificationService.saveTokenToFirestore();
+      NotificationService notificationService = NotificationService();
+      await notificationService.saveTokenToFirestore();
 
       if (!mounted) return;
       Navigator.pushReplacement(
