@@ -32,8 +32,8 @@ class NotificationService {
         }, SetOptions(merge: true));
       }
     } catch (e) {
-      print('Error: $e');
-      print("Error saving FCM token: $e");
+      print('Error SaveToken To Firestore: $e');
+      rethrow;
     }
   }
 
@@ -58,16 +58,7 @@ class NotificationService {
 
   void onMessageReceive() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print(
-        "Message received: ${message.notification?.title}, ${message.notification?.body}",
-      );
-      // if (message.notification != null) {
-      //   // Handle the notification data
-      //   print("Notification Data: ${message.data}");
-      // }
       if (message.notification != null) {
-        print("Notification Data: ${message.data}");
-
         // Show notification when app is in foreground
         showLocalNotification(message);
       }
@@ -77,12 +68,12 @@ class NotificationService {
   void showLocalNotification(RemoteMessage message) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-          'high_importance_channel',
-          'High Importance Notifications',
-          importance: Importance.high,
-          priority: Priority.high,
-          ticker: 'ticker',
-        );
+      'high_importance_channel',
+      'High Importance Notifications',
+      importance: Importance.high,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
 
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,

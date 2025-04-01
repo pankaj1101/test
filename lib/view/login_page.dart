@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:task/service/auth_service.dart';
 import 'package:task/service/notification_service.dart';
@@ -15,8 +16,16 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  bool isLoading = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    super.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +70,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 SizedBox(height: 60),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Form(
@@ -80,9 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                             return null;
                           },
                         ),
-
                         SizedBox(height: 30),
-
                         AppTextFormField(
                           hintText: 'Password',
                           prefixIcon: Icons.lock_outline,
@@ -98,22 +104,29 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(height: 35),
                         ElevatedButton(
                           onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              _login();
+                            if (!isLoading) {
+                              if (_formKey.currentState!.validate()) {
+                                _login();
+                              }
+                            } else {
+                              return;
                             }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             minimumSize: Size(double.infinity, 56),
                           ),
-                          child: Text(
-                            'Login',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xff00224F),
-                            ),
-                          ),
+                          child: isLoading
+                              ? CircularProgressIndicator(
+                                  backgroundColor: Colors.white, strokeWidth: 2)
+                              : Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xff00224F),
+                                  ),
+                                ),
                         ),
                         SizedBox(height: 60),
                         OrSeparator(),
@@ -143,25 +156,63 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     AuthService authService = AuthService();
-
+    final email = _emailController.text;
+    final password = _passwordController.text;
     try {
-      await authService.loginUser(
-        _emailController.text,
-        _passwordController.text,
-      );
-      NotificationService notificationService = NotificationService();
-      await notificationService.saveTokenToFirestore();
+      setState(() {
+        isLoading = true;
+      });
 
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => Dashboard()),
-      );
+      // if user come for the first time
+      final isRegistered = await authService.registerUser(email, password);
+
+      if (isRegistered) {
+        NotificationService notificationService = NotificationService();
+        await notificationService.saveTokenToFirestore();
+
+        if (!mounted) return;
+        setState(() {
+          isLoading = false;
+        });
+        navigateToDashboard(context);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        final isLogging = await authService.loginUser(email, password);
+        if (isLogging) {
+          if (!mounted) return;
+          navigateToDashboard(context);
+        }
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.code)));
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      ).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            e.toString(),
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
+  }
+
+  void navigateToDashboard(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => Dashboard()),
+    );
   }
 }
