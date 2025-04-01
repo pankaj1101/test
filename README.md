@@ -72,7 +72,7 @@ users (Collection)
 
 ## Screenshots
 Login Screen ![Screenshot_2025-04-01-10-30-39-854_com example task](https://github.com/user-attachments/assets/a3d62f5b-f348-465a-971f-95676a989709)
-Notification Screen ![image](https://github.com/user-attachments/assets/81976aa6-adad-4cd7-8bea-81eb14c03a20)
+![image](https://github.com/user-attachments/assets/81976aa6-adad-4cd7-8bea-81eb14c03a20)
 
 
 
