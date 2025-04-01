@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   bool isLoading = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
+  AuthService authService = AuthService();
   @override
   void dispose() {
     super.dispose();
@@ -103,22 +103,16 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         SizedBox(height: 35),
                         ElevatedButton(
-                          onPressed: () {
-                            if (!isLoading) {
-                              if (_formKey.currentState!.validate()) {
-                                _login();
-                              }
-                            } else {
-                              return;
-                            }
-                          },
+                          onPressed: onTapLoginButton,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             minimumSize: Size(double.infinity, 56),
                           ),
                           child: isLoading
                               ? CircularProgressIndicator(
-                                  backgroundColor: Colors.white, strokeWidth: 2)
+                                  backgroundColor: Colors.white,
+                                  strokeWidth: 2,
+                                )
                               : Text(
                                   'Login',
                                   style: TextStyle(
@@ -155,7 +149,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _login() async {
-    AuthService authService = AuthService();
     final email = _emailController.text;
     final password = _passwordController.text;
     try {
@@ -178,11 +171,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        final isLogging = await authService.loginUser(email, password);
-        if (isLogging) {
-          if (!mounted) return;
-          navigateToDashboard(context);
-        }
+        _handleLogin(email, password);
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(
@@ -209,10 +198,42 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // Navigate to Dashboard
   void navigateToDashboard(BuildContext context) {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => Dashboard()),
     );
+  }
+
+  // Handle when user is already registered
+  Future<void> _handleLogin(String email, String password) async {
+    try {
+      final isLogging = await authService.loginUser(email, password);
+      if (isLogging) {
+        if (!mounted) return;
+        navigateToDashboard(context);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            backgroundColor: Colors.red,
+            content: Text(e.toString(), style: TextStyle(color: Colors.white))),
+      );
+    }
+  }
+
+  void onTapLoginButton() {
+    if (!isLoading) {
+      // Validate the form
+      if (_formKey.currentState!.validate()) {
+        FocusScope.of(context).unfocus();
+        // Call the login function
+        _login();
+      }
+    } else {
+      return;
+    }
   }
 }
