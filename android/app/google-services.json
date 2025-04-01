@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "935729272505",
+    "project_id": "testproject-cda23",
+    "storage_bucket": "testproject-cda23.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935729272505:android:f83a96fbf6d9a7d4d6ed68",
+        "android_client_info": {
+          "package_name": "com.example.task"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7NMrQtG7bppke672uB_vcSn11oj-9sxE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
